@@ -15,8 +15,8 @@ suite('Functional Tests', function () {
         .request(server)
         .get('/hello')
         .end(function (err, res) {
-          assert.fail(res.status, 200);
-          assert.fail(res.text, 'hello Guest');
+          assert.equal(res.status, 200);
+          assert.equal(res.text, 'hello Guest');
           done();
         });
     });
@@ -26,8 +26,8 @@ suite('Functional Tests', function () {
         .request(server)
         .get('/hello?name=xy_z')
         .end(function (err, res) {
-          assert.fail(res.status, 200);
-          assert.fail(res.text, 'hello xy_z');
+          assert.equal(res.status, 200);
+          assert.equal(res.text, 'hello xy_z');
           done();
         });
     });
@@ -36,16 +36,31 @@ suite('Functional Tests', function () {
       chai
         .request(server)
         .put('/travellers')
-
+        
+        .send({
+          "surname": 'colombo'
+        })
+      
         .end(function (err, res) {
-          assert.fail();
-
+          assert.equal(res.status, 200);
+          assert.equal(res.type, "application/json");
+          assert.equal(res.body.name, "Cristoforo");
+          assert.equal(res.body.surname, "Colombo");
+          
           done();
         });
     });
     // #4
     test('Send {surname: "da Verrazzano"}', function (done) {
-      assert.fail();
+      chai.request(server)
+      .put("/travellers")
+      .send({"surname": "da Verrazzano"})
+      .end((req, res) => {
+        assert.equal(res.status, 200);
+        assert.equal(res.type, "application/json");
+        assert.equal(res.body.name, "Giovanni");
+        assert.equal(res.body.surname, "da Verrazzano");
+    });
 
       done();
     });
@@ -53,11 +68,14 @@ suite('Functional Tests', function () {
 });
 
 const Browser = require('zombie');
+Browser.site = "http://localhost:3000/";
+
+const browser = new Browser();
 
 suite('Functional Tests with Zombie.js', function () {
   this.timeout(5000);
-
-
+  
+  suiteSetup((done) => browser.visit('/', done));
 
   suite('Headless browser', function () {
     test('should have a working "site" property', function() {
